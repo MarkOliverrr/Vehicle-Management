@@ -1,0 +1,714 @@
+﻿@using VehicleDiary.Web.ViewModels
+@inject IViewLocalizer Localizer
+@model DBRepairVehicleModelVM
+
+<div class="container py-4">
+    <!-- Header with button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="repair-history-title">
+            <i class="fas fa-history me-2"></i>@Localizer["ServiceHistory"]
+        </h2>
+        <a asp-controller="RepairVehicle" asp-action="Create" asp-route-vehicleIDRoute="@Model.VehicleId" class="btn btn-primary btn-add-repair">
+            <i class="fas fa-plus-circle me-2"></i>@Localizer["AddNewService"]
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-card mb-4">
+        <div class="filter-header" id="filterToggle">
+            <h3 class="filter-title">
+                <i class="fas fa-filter me-2"></i>@Localizer["Filters"]
+            </h3>
+            <span class="filter-toggle-icon">
+                <i class="fas fa-chevron-down"></i>
+            </span>
+        </div>
+        <div class="filter-content" id="filterContent" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">@Localizer["Category"]</label>
+                    <select class="form-control filter-select" id="filterCategory">
+                        <option value="">@Localizer["AllCategories"]</option>
+                        <option value="Vehicle Repairs">@Localizer["VehicleRepairs"]</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Localizer["Type"]</label>
+                    <select class="form-control filter-select" id="filterType">
+                        <option value="">@Localizer["AllTypes"]</option>
+                        <!-- Options will be populated dynamically based on category -->
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Localizer["DateRange"]</label>
+                    <div class="input-group">
+                        <input type="date" class="form-control filter-date" id="filterDateFrom" placeholder="@Localizer["From"]">
+                        <input type="date" class="form-control filter-date" id="filterDateTo" placeholder="@Localizer["To"]">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">@Localizer["PriceRange"]</label>
+                    <div class="d-flex align-items-center">
+                        <input type="number" class="form-control filter-price" id="filterPriceMin" placeholder="@Localizer["Min"]" step="0.01">
+                        <span class="mx-2">-</span>
+                        <input type="number" class="form-control filter-price" id="filterPriceMax" placeholder="@Localizer["Max"]" step="0.01">
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="d-flex justify-content-end gap-2">
+                        <button class="btn btn-outline-secondary" id="resetFilters">
+                            <i class="fas fa-redo me-1"></i>@Localizer["ResetFilters"]
+                        </button>
+                        <button class="btn btn-primary" id="applyFilters">
+                            <i class="fas fa-check me-1"></i>@Localizer["ApplyFilters"]
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-count mb-3" id="resultsCount">
+        @{
+            var showingRecordsText = Localizer["ShowingRecords", Model.RepairViews.Count()];
+        }
+        @showingRecordsText
+    </div>
+
+    <!-- Repair History -->
+    @if (Model.RepairViews != null && Model.RepairViews.Any())
+    {
+        <div class="repair-cards-container" id="repairCardsContainer">
+            @foreach (var repair in Model.RepairViews)
+            {
+                <div class="repair-card" id="repair-@repair.Id"
+                     data-category="@repair.RepairVCategory"
+                     data-type="@repair.RepairVType"
+                     data-date="@repair.RepairVWhen.ToString("yyyy-MM-dd")"
+                     data-price="@repair.RepairVPrice"
+                     data-mileage="@repair.RepairVMileage">
+
+                    <div class="repair-card-header">
+                        <div class="repair-category-badge">
+                            @repair.RepairVCategory
+                        </div>
+                        <span class="repair-date">@repair.RepairVWhen.ToString("d MMM yyyy")</span>
+                    </div>
+
+                    <div class="repair-card-body">
+                        <div class="repair-type">
+                            <i class="fas fa-cog me-2"></i>@repair.RepairVType
+                        </div>
+
+                        <h4 class="repair-name">@repair.RepairVName</h4>
+
+                        <!-- Mileage -->
+                        <div class="repair-detail-item">
+                            <i class="fas fa-tachometer-alt me-2"></i>@Localizer["Mileage"]: @repair.RepairVMileage km
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(repair.RepairVPart))
+                        {
+                            <div class="repair-detail-item">
+                                <i class="fas fa-tools me-2"></i>@Localizer["Part"]: @repair.RepairVPart
+                            </div>
+                        }
+
+                        <!-- Part Brand -->
+                        @if (!string.IsNullOrEmpty(repair.RepairVPartBrand))
+                        {
+                            <div class="repair-detail-item">
+                                <i class="fas fa-industry me-2"></i>@Localizer["PartBrand"]: @repair.RepairVPartBrand
+                            </div>
+                        }
+
+                        <!-- Part Code -->
+                        @if (!string.IsNullOrEmpty(repair.RepairVPartCode))
+                        {
+                            <div class="repair-detail-item">
+                                <i class="fas fa-barcode me-2"></i>@Localizer["PartCode"]: @repair.RepairVPartCode
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(repair.RepairVTechnician))
+                        {
+                            <div class="repair-detail-item">
+                                <i class="fas fa-user me-2"></i>@Localizer["Technician"]: @repair.RepairVTechnician
+                            </div>
+                        }
+
+                        <!-- File Download -->
+                        @if (!string.IsNullOrEmpty(repair.FileName))
+                        {
+                            <div class="repair-file-download">
+                                <i class="fas fa-paperclip me-2"></i>
+                                <a href="@Url.Action("Download", "RepairVehicle", new { id = repair.Id })" class="file-download-link" target="_blank">
+                                    @repair.FileName
+                                </a>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(repair.ReapairVNotes))
+                        {
+                            <div class="repair-notes">
+                                <i class="fas fa-sticky-note me-2"></i>@repair.ReapairVNotes
+                            </div>
+                        }
+                    </div>
+
+                    <div class="repair-card-footer">
+                        @if (repair.RepairVPrice > 0)
+                        {
+                            <div class="repair-price">
+                                ₱@repair.RepairVPrice.ToString("N2")
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="repair-price no-price">
+                                @Localizer["NoCost"]
+                            </div>
+                        }
+                        <div class="repair-actions">
+                            <button onclick="editRepair('@repair.Id')" class="btn-edit-repair" title="@Localizer["Edit"]">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteRepair('@repair.Id')" class="btn-delete-repair" title="@Localizer["Delete"]">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="no-repairs-card">
+            <div class="no-repairs-icon">
+                <i class="fas fa-wrench"></i>
+            </div>
+            <h3>@Localizer["NoServiceRecords"]</h3>
+            <p>@Localizer["NoServiceRecordsDescription"]</p>
+            <a asp-controller="RepairVehicle" asp-action="Create" asp-route-vehicleIDRoute="@Model.VehicleId" class="btn btn-primary btn-add-first-repair">
+                <i class="fas fa-plus-circle me-2"></i>@Localizer["AddFirstService"]
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function deleteRepair(id) {
+            if (confirm("Are you sure you want to delete this service record?")) {
+                $.ajax({
+                    url: "@Url.Action("Delete", "RepairVehicle")/" + id,
+                    type: "DELETE",
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (result) {
+                        $("#repair-" + id).fadeOut(300, function() {
+                            $(this).remove();
+                            updateResultsCount();
+                            // If no repairs left, show the empty state
+                            if ($(".repair-card").length === 0) {
+                                location.reload();
+                            }
+                        });
+                        showToast('Service record deleted successfully', 'success');
+                    },
+                    error: function (err) {
+                        console.error(err);
+                        showToast('An error occurred while deleting the service record', 'error');
+                    }
+                });
+            }
+        }
+
+        // Edit repair record (redirect to edit page)
+        function editRepair(id) {
+            window.location.href = '@Url.Action("Edit", "RepairVehicle")/' + id;
+        }
+
+        // Filter functionality
+        $(document).ready(function() {
+            // Toggle filter section
+            $('#filterToggle').click(function() {
+                $('#filterContent').slideToggle(300);
+                $('.filter-toggle-icon i').toggleClass('fa-chevron-down fa-chevron-up');
+            });
+
+            // Category and type relationship
+            const categoryTypes = {
+                "Vehicle Repairs": ["Engine", "Transmission", "Brakes", "Chassis", "Electrical", "Bodywork", "Air Conditioning", "Suspension", "Exhaust", "Cooling System"],
+                "Vehicle Upgrades": ["Retrofit", "Performance", "Style", "Interior", "Accessories"],
+                "Diagnostics": ["Coding", "Error Diagnostics", "Software Update"]
+            };
+
+            $('#filterCategory').change(function() {
+                const selectedCategory = $(this).val();
+                const typeSelect = $('#filterType');
+                typeSelect.html('<option value="">All Types</option>');
+
+                if (selectedCategory && categoryTypes[selectedCategory]) {
+                    categoryTypes[selectedCategory].forEach(type => {
+                        typeSelect.append($('<option>', {
+                            value: type,
+                            text: type
+                        }));
+                    });
+                }
+            });
+
+            // Apply filters
+            $('#applyFilters').click(function() {
+                applyFilters();
+            });
+
+            // Reset filters
+            $('#resetFilters').click(function() {
+                $('#filterCategory').val('Vehicle Repairs');
+                $('#filterType').val('');
+                $('#filterDateFrom').val('');
+                $('#filterDateTo').val('');
+                $('#filterPriceMin').val('');
+                $('#filterPriceMax').val('');
+                applyFilters();
+            });
+
+            // Apply filters when values change
+            $('.filter-select, .filter-date, .filter-price').change(function() {
+                applyFilters();
+            });
+
+            function applyFilters() {
+                const categoryFilter = $('#filterCategory').val();
+                const typeFilter = $('#filterType').val();
+                const dateFromFilter = $('#filterDateFrom').val();
+                const dateToFilter = $('#filterDateTo').val();
+                const priceMinFilter = $('#filterPriceMin').val();
+                const priceMaxFilter = $('#filterPriceMax').val();
+                const mileageFilter = $('#filterMileage').val();
+
+                $('.repair-card').each(function() {
+                    let show = true;
+                    const category = $(this).data('category');
+                    const type = $(this).data('type');
+                    const date = $(this).data('date');
+                    const price = parseFloat($(this).data('price'));
+                    const mileage = parseInt($(this).data('mileage'));
+
+                    // Category filter
+                    if (categoryFilter && category !== categoryFilter) {
+                        show = false;
+                    }
+
+                    // Type filter
+                    if (typeFilter && type !== typeFilter) {
+                        show = false;
+                    }
+
+                    // Date filter
+                    if (dateFromFilter && date < dateFromFilter) {
+                        show = false;
+                    }
+                    if (dateToFilter && date > dateToFilter) {
+                        show = false;
+                    }
+
+                    // Price filter
+                    if (priceMinFilter && price < parseFloat(priceMinFilter)) {
+                        show = false;
+                    }
+                    if (priceMaxFilter && price > parseFloat(priceMaxFilter)) {
+                        show = false;
+                    }
+
+                    if (show) {
+                        $(this).show();
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                updateResultsCount();
+            }
+
+            function updateResultsCount() {
+                const visibleCount = $('.repair-card:visible').length;
+                const totalCount = $('.repair-card').length;
+                $('#filteredCount').text(visibleCount);
+
+                if (visibleCount === 0 && totalCount > 0) {
+                    $('#resultsCount').addClass('no-results');
+                    $('#resultsCount').html('<span class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>No records match your filters</span>');
+                } else {
+                    $('#resultsCount').removeClass('no-results');
+                    $('#resultsCount').html(`Showing <span id="filteredCount">${visibleCount}</span> service records`);
+                }
+            }
+
+            // Initialize filters
+            updateResultsCount();
+        });
+    </script>
+
+    <style>
+        /* Repair History Styles - Green Theme */
+        .repair-history-title {
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+        }
+
+        .btn-add-repair, .btn-add-first-repair {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+
+            .btn-add-repair:hover, .btn-add-first-repair:hover {
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+            }
+
+        /* Filter Styles */
+        .filter-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            cursor: pointer;
+            border-bottom: 1px solid #bbf7d0;
+        }
+
+        .filter-title {
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+            .filter-title i {
+                color: #10b981;
+            }
+
+        .filter-toggle-icon {
+            color: #10b981;
+            transition: transform 0.3s ease;
+        }
+
+        .filter-content {
+            padding: 1.5rem;
+            display: block;
+        }
+
+        .filter-select, .filter-date, .filter-price {
+            border-radius: 10px;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+            .filter-select:focus, .filter-date:focus, .filter-price:focus {
+                border-color: #10b981;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+            }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            }
+
+        .results-count {
+            font-weight: 500;
+            color: #64748b;
+            padding: 0.5rem 0;
+        }
+
+            .results-count.no-results {
+                color: #ef4444;
+            }
+
+        /* Repair Cards Container */
+        .repair-cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Repair Card */
+        .repair-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+            .repair-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 12px 32px rgba(149, 157, 165, 0.2);
+                border-color: #bbf7d0;
+            }
+
+        .repair-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-bottom: 1px solid #bbf7d0;
+        }
+
+        .repair-category-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .repair-date {
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .repair-card-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .repair-type {
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .repair-name {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .repair-detail-item {
+            display: flex;
+            align-items: center;
+            color: #475569;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+            .repair-detail-item i {
+                color: #10b981;
+                width: 20px;
+            }
+
+        .repair-file-download {
+            display: flex;
+            align-items: center;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+            background: #f0fdf4;
+            border-radius: 8px;
+            border-left: 3px solid #10b981;
+        }
+
+        .file-download-link {
+            color: #10b981;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+            .file-download-link:hover {
+                color: #059669;
+                text-decoration: underline;
+            }
+
+        .repair-notes {
+            background: #f8fafc;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border-left: 3px solid #e2e8f0;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+
+        .repair-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: #f0fdf4;
+            border-top: 1px solid #bbf7d0;
+        }
+
+        .repair-price {
+            font-weight: 700;
+            font-size: 1.25rem;
+            color: #059669;
+        }
+
+            .repair-price.no-price {
+                color: #94a3b8;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+
+        .repair-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit-repair, .btn-delete-repair {
+            background: none;
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+            .btn-edit-repair:hover {
+                background: #10b981;
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(16, 185, 129, 0.2);
+            }
+
+        .btn-delete-repair {
+            border-color: #f87171;
+            color: #ef4444;
+        }
+
+            .btn-delete-repair:hover {
+                background: #ef4444;
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(239, 68, 68, 0.2);
+            }
+
+        /* No Repairs Card */
+        .no-repairs-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(149, 157, 165, 0.15);
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .no-repairs-icon {
+            font-size: 4rem;
+            color: #bbf7d0;
+            margin-bottom: 1.5rem;
+        }
+
+        .no-repairs-card h3 {
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .no-repairs-card p {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        /* Animation for cards */
+        .repair-card {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @@keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive adjustments */
+        @@media (max-width: 768px) {
+            .repair-cards-container {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-content .row {
+                flex-direction: column;
+            }
+
+            .filter-header, .repair-card-header, .repair-card-footer {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: flex-start;
+            }
+
+            .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .repair-history-title {
+                font-size: 1.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+                .input-group .form-control {
+                    margin-bottom: 0.5rem;
+                }
+        }
+    </style>
+}

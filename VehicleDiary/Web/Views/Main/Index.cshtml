@@ -1,0 +1,559 @@
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@model DBMainModelVM
+@using System.Globalization
+@inject IViewLocalizer Localizer
+
+<!DOCTYPE html>
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.Name">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VehicleDiary - Your Vehicle Management Solution</title>
+    <meta name="description" content="Track maintenance, repairs, fuel consumption, and costs in one intuitive platform.">
+
+    
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                background: 'hsl(0, 0%, 99%)',
+                foreground: 'hsl(222, 47%, 11%)',
+                card: 'hsl(0, 0%, 100%)',
+                'card-foreground': 'hsl(222, 47%, 11%)',
+                primary: 'hsl(160, 84%, 39%)',
+                'primary-foreground': 'hsl(0, 0%, 100%)',
+                secondary: 'hsl(215, 20%, 95%)',
+                'secondary-foreground': 'hsl(222, 47%, 11%)',
+                muted: 'hsl(215, 20%, 96%)',
+                'muted-foreground': 'hsl(215, 16%, 47%)',
+                accent: 'hsl(160, 84%, 39%)',
+                border: 'hsl(215, 20%, 91%)',
+              },
+              fontFamily: {
+                heading: ['Space Grotesk', 'sans-serif'],
+                body: ['Inter', 'sans-serif'],
+              },
+              boxShadow: {
+                'soft': '0 4px 24px -2px rgba(30, 41, 59, 0.08)',
+                'elevated': '0 12px 40px -8px rgba(30, 41, 59, 0.12)',
+                'glow': '0 0 40px rgba(16, 185, 129, 0.15)',
+              },
+            },
+          },
+        }
+    </script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Google Sans';
+            background-color: hsl(0, 0%, 99%);
+            color: hsl(222, 47%, 11%);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(172, 66%, 50%) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(172, 66%, 50%) 100%);
+        }
+
+            .btn-primary-gradient:hover {
+                box-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+                transform: scale(1.02);
+            }
+
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-animation-delayed {
+            animation: float 6s ease-in-out infinite 2s;
+        }
+
+        .floating-animation-delayed-2 {
+            animation: float 6s ease-in-out infinite 4s;
+        }
+
+        @@keyframes float {
+            0%, 100%
+
+        {
+            transform: translateY(0px);
+        }
+
+        50% {
+            transform: translateY(-12px);
+        }
+
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+            .fade-in.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+
+        .landing-page .gradient-text {
+            background: linear-gradient(135deg, hsl(160, 84%, 39%) 0%, hsl(172, 66%, 50%) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+    </style>
+</head>
+<body class="landing-page">
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center overflow-hidden" style="background: linear-gradient(135deg, hsl(222, 47%, 11%) 0%, hsl(215, 28%, 17%) 100%);">
+        <!-- Background decorations -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-1/4 left-1/4 w-96 h-96 rounded-full opacity-30 blur-3xl" style="background: radial-gradient(circle, hsl(160, 84%, 39%), transparent);"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full opacity-20 blur-3xl" style="background: radial-gradient(circle, hsl(172, 66%, 50%), transparent);"></div>
+        </div>
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                <!-- Text Content -->
+                <div class="text-center lg:text-left">
+                    <h1 class="text-6xl sm:text-6xl lg:text-6xl xl:text-7xl font-bold text-white mb-6 leading-tight">
+                        @Localizer["HeroTitleLine1"]<br>
+                        <span class="gradient-text">@Localizer["HeroTitleBrand"]</span>
+                    </h1>
+                    <p class="text-lg sm:text-xl text-white/70 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
+                        @Localizer["HeroSubtitle"]
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a href="#" class="btn-primary-gradient text-white font-semibold px-8 py-4 rounded-2xl text-lg inline-flex items-center justify-center gap-3 transition-all duration-300 shadow-lg">
+                            <i data-lucide="car" class="w-6 h-6"></i>
+                            @Localizer["HeroPrimaryAction"]
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#features" class="border-2 border-white/20 text-white font-semibold px-8 py-4 rounded-2xl text-lg inline-flex items-center justify-center gap-2 hover:bg-white/10 transition-all duration-300">
+                            @Localizer["HeroSecondaryAction"]
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Floating Cards Visual -->
+                <div class="relative h-80 sm:h-96 lg:h-[500px] hidden md:block">
+                    <!-- Card 1 -->
+                    <div class="glass-card absolute top-8 left-4 lg:left-8 rounded-2xl p-3 shadow-elevated floating-animation">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(172, 66%, 50%));">
+                                <i data-lucide="wrench" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-foreground text-lg">@Localizer["CardOilChangeTitle"]</p>
+                                <p class="main-color-txt font-bold text-xl">₱2499.99</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="glass-card absolute top-1/3 right-4 lg:right-8 rounded-2xl p-3 shadow-elevated floating-animation-delayed">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(172, 66%, 50%));">
+                                <i data-lucide="fuel" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-foreground text-lg">@Localizer["CardFuelRefillTitle"]</p>
+                                <p class="main-color-txt font-bold text-xl">₱999.50</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="glass-card absolute bottom-16 left-1/4 rounded-2xl p-3 shadow-elevated floating-animation-delayed-2">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, hsl(160, 84%, 39%), hsl(172, 66%, 50%));">
+                                <i data-lucide="battery" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-foreground text-lg">@Localizer["CardBatteryTitle"]</p>
+                                <p class="main-color-txt font-bold text-xl">₱2999.99</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 md:py-24" style="background: hsl(215, 20%, 96%);">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                <!-- Stat 1 -->
+                <div class="stat-card flex items-center gap-5 p-6 rounded-2xl bg-white border border-border/50 shadow-soft transition-all duration-300 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="car" class="w-7 h-7" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <div>
+                        <div class="text-3xl sm:text-4xl font-bold text-foreground">
+                            <span class="stat-number" data-target="@Model.TotalCars">0</span><span class="main-color-txt">+</span>
+                        </div>
+                        <p class="text-muted-foreground text-sm mt-1">@Localizer["StatsVehiclesTracked"]</p>
+                    </div>
+                </div>
+
+                <!-- Stat 2 -->
+                <div class="stat-card flex items-center gap-5 p-6 rounded-2xl bg-white border border-border/50 shadow-soft transition-all duration-300 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="wrench" class="w-7 h-7" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <div>
+                        <div class="text-3xl sm:text-4xl font-bold text-foreground">
+                            <span class="stat-number" data-target="@Model.TotalServices">0</span><span class="main-color-txt">+</span>
+                        </div>
+                        <p class="text-muted-foreground text-sm mt-1">@Localizer["StatsServicesLogged"]</p>
+                    </div>
+                </div>
+
+                <!-- Stat 3 -->
+                <div class="stat-card flex items-center gap-5 p-6 rounded-2xl bg-white border border-border/50 shadow-soft transition-all duration-300 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="users" class="w-7 h-7" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <div>
+                        <div class="text-3xl sm:text-4xl font-bold text-foreground">
+                            <span class="stat-number" data-target="@Model.TotalUsers">0</span><span class="main-color-txt">+</span>
+                        </div>
+                        <p class="text-muted-foreground text-sm mt-1">@Localizer["StatsActiveUsers"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 md:py-32 bg-background">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                    @Localizer["FeaturesTitle"]
+                </h2>
+                <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+                    @Localizer["FeaturesSubtitle"]
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                <!-- Feature 1 -->
+                <div class="feature-card h-full p-8 rounded-3xl bg-white border border-border/50 shadow-soft transition-all duration-500 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="wrench" class="w-8 h-8" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["FeatureMaintenanceTitle"]</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        @Localizer["FeatureMaintenanceDescription"]
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureMaintenanceItem1"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureMaintenanceItem2"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureMaintenanceItem3"]</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card h-full p-8 rounded-3xl bg-white border border-border/50 shadow-soft transition-all duration-500 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="fuel" class="w-8 h-8" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["FeatureFuelTitle"]</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        @Localizer["FeatureFuelDescription"]
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureFuelItem1"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureFuelItem2"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureFuelItem3"]</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card h-full p-8 rounded-3xl bg-white border border-border/50 shadow-soft transition-all duration-500 hover:shadow-elevated fade-in">
+                    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 transition-all duration-300" style="background: hsla(160, 84%, 39%, 0.1);">
+                        <i data-lucide="pie-chart" class="w-8 h-8" style="color: hsl(160, 84%, 39%);"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["FeatureCostsTitle"]</h3>
+                    <p class="text-muted-foreground mb-6 leading-relaxed">
+                        @Localizer["FeatureCostsDescription"]
+                    </p>
+                    <ul class="space-y-3">
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureCostsItem1"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureCostsItem2"]</span>
+                        </li>
+                        <li class="flex items-center gap-3 text-sm">
+                            <span class="w-5 h-5 rounded-full flex items-center justify-center shrink-0" style="background: hsla(160, 84%, 39%, 0.1);">
+                                <i data-lucide="check" class="w-3 h-3" style="color: hsl(160, 84%, 39%);"></i>
+                            </span>
+                            <span class="text-muted-foreground">@Localizer["FeatureCostsItem3"]</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-20 md:py-32" style="background: hsla(215, 20%, 96%, 0.3);">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
+                    @Localizer["HowItWorksTitle"]
+                </h2>
+                <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+                    @Localizer["HowItWorksSubtitle"]
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8 lg:gap-12 relative">
+                <!-- Connection line for desktop -->
+                <div class="hidden md:block absolute top-16 left-1/4 right-1/4 h-0.5" style="background: linear-gradient(to right, transparent, hsla(160, 84%, 39%, 0.3), transparent);"></div>
+
+                <!-- Step 1 -->
+                <div class="relative fade-in">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-8">
+                            <div class="w-20 h-20 rounded-2xl flex items-center justify-center shadow-glow" style="background: hsl(160, 84%, 39%);">
+                                <i data-lucide="car" class="w-9 h-9 text-white"></i>
+                            </div>
+                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-lg text-sm font-bold flex items-center justify-center" style="background: hsl(222, 47%, 11%); color: white;">
+                                01
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["Step1Title"]</h3>
+                        <p class="text-muted-foreground leading-relaxed max-w-xs">
+                            @Localizer["Step1Description"]
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="relative fade-in">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-8">
+                            <div class="w-20 h-20 rounded-2xl flex items-center justify-center shadow-glow" style="background: hsl(160, 84%, 39%);">
+                                <i data-lucide="clipboard-list" class="w-9 h-9 text-white"></i>
+                            </div>
+                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-lg text-sm font-bold flex items-center justify-center" style="background: hsl(222, 47%, 11%); color: white;">
+                                02
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["Step2Title"]</h3>
+                        <p class="text-muted-foreground leading-relaxed max-w-xs">
+                            @Localizer["Step2Description"]
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="relative fade-in">
+                    <div class="flex flex-col items-center text-center">
+                        <div class="relative mb-8">
+                            <div class="w-20 h-20 rounded-2xl flex items-center justify-center shadow-glow" style="background: hsl(160, 84%, 39%);">
+                                <i data-lucide="trending-up" class="w-9 h-9 text-white"></i>
+                            </div>
+                            <span class="absolute -top-2 -right-2 w-8 h-8 rounded-lg text-sm font-bold flex items-center justify-center" style="background: hsl(222, 47%, 11%); color: white;">
+                                03
+                            </span>
+                        </div>
+                        <h3 class="text-xl font-bold text-foreground mb-3">@Localizer["Step3Title"]</h3>
+                        <p class="text-muted-foreground leading-relaxed max-w-xs">
+                            @Localizer["Step3Description"]
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 md:py-32 relative overflow-hidden" style="background: hsl(222, 47%, 11%);">
+        <!-- Background decorations -->
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse at center, hsla(160, 84%, 39%, 0.2), transparent 70%);"></div>
+        <div class="absolute top-0 left-0 w-96 h-96 rounded-full blur-3xl" style="background: hsla(160, 84%, 39%, 0.1);"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 rounded-full blur-3xl" style="background: hsla(160, 84%, 39%, 0.1);"></div>
+
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-3xl mx-auto fade-in">
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-6">
+                    @Localizer["CtaTitle"]
+                </h2>
+                <p class="text-white/70 text-lg md:text-xl mb-10 leading-relaxed">
+                    @Localizer["CtaSubtitle"]
+                </p>
+                <a href="#" class="inline-flex items-center justify-center gap-3 bg-white text-foreground hover:bg-white/90 rounded-xl px-10 py-4 text-lg font-semibold shadow-elevated transition-all duration-300 hover:scale-105">
+                    <i data-lucide="car" class="w-6 h-6"></i>
+                    @Localizer["CtaButton"]
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 border-t" style="background: hsla(215, 20%, 96%, 0.3); border-color: hsla(215, 20%, 91%, 0.5);">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background: hsl(160, 84%, 39%);">
+                        <i data-lucide="car" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold text-foreground">@Localizer["HeroTitleBrand"]</span>
+                </div>
+
+                <nav class="flex flex-wrap items-center justify-center gap-8">
+                    <a href="#features" class="text-muted-foreground hover:text-foreground transition-colors text-sm">@Localizer["FooterFeatures"]</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors text-sm">@Localizer["FooterPricing"]</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors text-sm">@Localizer["FooterAbout"]</a>
+                    <a href="#" class="text-muted-foreground hover:text-foreground transition-colors text-sm">@Localizer["FooterContact"]</a>
+                </nav>
+
+                <p class="text-muted-foreground text-sm">
+                    @Localizer["FooterCopyright"]
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // Intersection Observer for fade-in animations
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const fadeObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+            }
+          });
+        }, { threshold: 0.1 });
+
+        fadeElements.forEach(el => fadeObserver.observe(el));
+
+        // Stats counter animation
+        const statNumbers = document.querySelectorAll('.stat-number');
+        const statObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const el = entry.target;
+              const target = parseFloat(el.dataset.target);
+              const decimals = parseInt(el.dataset.decimals) || 0;
+              const duration = 2000;
+              const steps = 60;
+              const increment = target / steps;
+              let current = 0;
+
+              const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                  el.textContent = decimals > 0 ? target.toFixed(decimals) : Math.round(target);
+                  clearInterval(timer);
+                } else {
+                  el.textContent = decimals > 0 ? current.toFixed(decimals) : Math.round(current);
+                }
+              }, duration / steps);
+
+              statObserver.unobserve(el);
+            }
+          });
+        }, { threshold: 0.5 });
+
+        statNumbers.forEach(el => statObserver.observe(el));
+    </script>
+</body>
+</html>
