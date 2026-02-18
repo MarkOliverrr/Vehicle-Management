@@ -30,6 +30,7 @@ namespace VehicleDiary.Application.Services.MapperService
         public async Task AddVehicleAsync(VehicleDto vehicleDto)
         {
             var entity = _mapper.Map<DBVehicleModel>(vehicleDto);
+            entity.RepairCost ??= 0f;
             await _repositoryCrud.AddAsync(entity);
         }
         public async Task<IEnumerable<VehicleDto>> GettingVehiclesAsync(string userID)
