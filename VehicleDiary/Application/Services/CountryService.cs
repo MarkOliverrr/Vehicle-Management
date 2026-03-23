@@ -88,6 +88,7 @@ namespace VehicleDiary.Application.Services
     new CountriesModel { Code = "PK", Name = "Pakistan" },
     new CountriesModel { Code = "PA", Name = "Panama" },
     new CountriesModel { Code = "PE", Name = "Peru" },
+    new CountriesModel { Code = "PH", Name = "Philippines" },
     new CountriesModel { Code = "PL", Name = "Poland" },
     new CountriesModel { Code = "PT", Name = "Portugal" },
     new CountriesModel { Code = "RO", Name = "Romania" },
